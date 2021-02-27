@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
     This section defines project-level properties.
@@ -27,15 +28,17 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>SuiteCRMAddIn</RootNamespace>
     <AssemblyName>SuiteCRMAddIn</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <DefineConstants>VSTO40</DefineConstants>
     <IsWebBootstrapper>False</IsWebBootstrapper>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
-    <ApplicationVersion>1.0.0.4</ApplicationVersion>
-    <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
+    <ApplicationVersion>1.0.1.4</ApplicationVersion>
+    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
@@ -45,6 +48,9 @@
     <FriendlyName>SuiteCRMAddIn</FriendlyName>
     <OfficeApplicationDescription />
     <LoadBehavior>3</LoadBehavior>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
@@ -64,7 +70,7 @@
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
       <Visible>False</Visible>
-      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
+      <ProductName>Среда выполнения Microsoft Visual Studio 2010 Tools for Office %28x86 и x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
@@ -104,6 +110,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <!--
     This section defines properties that are set when the "Release" configuration is selected.
@@ -134,14 +141,24 @@
   -->
   <ItemGroup>
     <Reference Include="Accessibility" />
-    <Reference Include="AddinExpress.ToolbarControls.2005, Version=7.2.4055.2005, Culture=neutral, PublicKeyToken=16211aef6795d6cc, processorArchitecture=MSIL" />
-    <Reference Include="ListViewEx">
-      <HintPath>.\ListViewEx.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NGettext, Version=0.6.1.0, Culture=neutral, PublicKeyToken=08d3d1c89dfd2985, processorArchitecture=MSIL">
+      <HintPath>..\packages\NGettext.0.6.3\lib\net46\NGettext.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -149,6 +166,10 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="TidyHTML5Managed, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TidyHtml5ManagedRepack.1.1.4\lib\net46\TidyHTML5Managed.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -189,61 +210,208 @@
     can be found.
   -->
   <ItemGroup>
-    <Compile Include="AddressBook.cs">
+    <Compile Include="BusinessLogic\CallsSynchroniser.cs" />
+    <Compile Include="BusinessLogic\CallSyncState.cs" />
+    <Compile Include="BusinessLogic\CrmId.cs" />
+    <Compile Include="BusinessLogic\CrmIdValidationPolicy.cs" />
+    <Compile Include="Exceptions\DurationSetToZeroException.cs" />
+    <Compile Include="Daemon\DeferredStartupAction.cs" />
+    <Compile Include="Dialogs\ManualSyncContactForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddressBook.Designer.cs">
+    <Compile Include="Dialogs\ManualSyncContactForm.Designer.cs">
+      <DependentUpon>ManualSyncContactForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exceptions\InvalidCrmIdException.cs" />
+    <Compile Include="Dialogs\ConfirmRearchiveAlreadyArchivedEmails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ConfirmRearchiveAlreadyArchivedEmails.Designer.cs">
+      <DependentUpon>ConfirmRearchiveAlreadyArchivedEmails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exceptions\DuplicateCrmIdException.cs" />
+    <Compile Include="BusinessLogic\ErrorHandler.cs" />
+    <Compile Include="BusinessLogic\MeetingsSynchroniser.cs" />
+    <Compile Include="BusinessLogic\MeetingSyncState.cs" />
+    <Compile Include="BusinessLogic\TransmissionState.cs" />
+    <Compile Include="Dialogs\AdvancedArchiveSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AdvancedArchiveSettingsDialog.Designer.cs">
+      <DependentUpon>AdvancedArchiveSettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exceptions\NeverShowUserException.cs" />
+    <Compile Include="Exceptions\ProbableDuplicateItemException.cs" />
+    <Compile Include="BusinessLogic\SyncStateManager.cs" />
+    <Compile Include="BusinessLogic\WithRemovableSynchronisationProperties.cs" />
+    <Compile Include="Dialogs\AddressBook.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AddressBook.Designer.cs">
       <DependentUpon>AddressBook.cs</DependentUpon>
     </Compile>
+    <Compile Include="BusinessLogic\CRMPermissionsCache.cs" />
+    <Compile Include="BusinessLogic\Documentation.cs" />
+    <Compile Include="BusinessLogic\EmailCategoriesCollection.cs" />
+    <Compile Include="Daemon\AbstractDaemonAction.cs" />
+    <Compile Include="BusinessLogic\AppointmentSyncState.cs" />
+    <Compile Include="BusinessLogic\AppointmentsSynchroniser.cs" />
+    <Compile Include="Daemon\documentation.cs" />
+    <Compile Include="Daemon\FetchEmailCategoriesAction.cs" />
+    <Compile Include="Daemon\TransmitNewAction.cs" />
+    <Compile Include="Daemon\TransmitUpdateAction.cs" />
+    <Compile Include="Dialogs\Documentation.cs" />
+    <Compile Include="Dialogs\ShuttingDownDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ShuttingDownDialog.Designer.cs">
+      <DependentUpon>ShuttingDownDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exceptions\ActionDisabledException.cs" />
+    <Compile Include="Exceptions\ActionFailedException.cs" />
+    <Compile Include="Exceptions\ActionRetryableException.cs" />
+    <Compile Include="Exceptions\AlreadyArchivedException.cs" />
+    <Compile Include="Exceptions\BadStateTransition.cs" />
+    <Compile Include="Exceptions\Documentation.cs" />
+    <Compile Include="Exceptions\DuplicateSyncStateException.cs" />
+    <Compile Include="Exceptions\UnexpectedSyncStateClassException.cs" />
+    <Compile Include="Extensions\AddressEntryExtensions.cs" />
+    <Compile Include="Extensions\ApplicationExtension.cs" />
+    <Compile Include="Extensions\MeetingItemExtensions.cs" />
+    <Compile Include="Extensions\TaskItemExtensions.cs" />
+    <Compile Include="Extensions\ContactItemExtensions.cs" />
+    <Compile Include="Extensions\AppointmentItemExtensions.cs" />
+    <Compile Include="Extensions\Documentation.cs" />
+    <Compile Include="Extensions\MailItemExtensions.cs" />
+    <Compile Include="Extensions\RecipientExtensions.cs" />
+    <Compile Include="Extensions\TreeNodeExtensions.cs" />
+    <Compile Include="Extensions\TreeViewExtensions.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ProtoItems\Documentation.cs" />
+    <Compile Include="ProtoItems\ProtoAppointment.cs" />
+    <Compile Include="ProtoItems\ProtoContact.cs" />
+    <Compile Include="ProtoItems\ProtoItem.cs" />
+    <Compile Include="ProtoItems\ProtoItem{1}.cs" />
+    <Compile Include="ProtoItems\ProtoTask.cs" />
+    <Compile Include="BusinessLogic\SyncDirection.cs" />
+    <Compile Include="Daemon\DaemonAction.cs" />
+    <Compile Include="Daemon\DaemonWorker.cs" />
+    <Compile Include="BusinessLogic\RunState.cs" />
+    <Compile Include="Helpers\LicenceValidation.cs" />
+    <Compile Include="Helpers\LicenceValidationHelper.cs" />
+    <Compile Include="BusinessLogic\ContactSynchroniser.cs" />
+    <Compile Include="BusinessLogic\ContactSyncState.cs" />
+    <Compile Include="BusinessLogic\EmailAccountsArchiveSettings.cs" />
+    <Compile Include="BusinessLogic\EmailArchiving.cs" />
+    <Compile Include="BusinessLogic\RepeatingProcess.cs" />
+    <Compile Include="BusinessLogic\SyncContext.cs" />
+    <Compile Include="BusinessLogic\Synchroniser.cs" />
+    <Compile Include="BusinessLogic\SyncState.cs" />
+    <Compile Include="BusinessLogic\SyncState{1}.cs" />
+    <Compile Include="BusinessLogic\TaskSynchroniser.cs" />
+    <Compile Include="BusinessLogic\TaskSyncState.cs" />
+    <Compile Include="BusinessLogic\ThreadSafeList.cs" />
     <Compile Include="clsGlobals.cs" />
-    <Compile Include="clsSettings.cs" />
-    <Compile Include="frmArchive.cs">
+    <Compile Include="Exceptions\CouldNotConstructQueryException.cs" />
+    <Compile Include="Dialogs\EmailAccountArchiveSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Dialogs\EmailAccountArchiveSettingsControl.Designer.cs">
+      <DependentUpon>EmailAccountArchiveSettingsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ReconfigureOrDisableDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmArchive.Designer.cs">
-      <DependentUpon>frmArchive.cs</DependentUpon>
+    <Compile Include="Dialogs\ReconfigureOrDisableDialog.Designer.cs">
+      <DependentUpon>ReconfigureOrDisableDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmCustomModules.cs">
+    <Compile Include="Dialogs\ArchiveDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmCustomModules.Designer.cs">
-      <DependentUpon>frmCustomModules.cs</DependentUpon>
+    <Compile Include="Dialogs\ArchiveDialog.Designer.cs">
+      <DependentUpon>ArchiveDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmSettings.cs">
+    <Compile Include="Dialogs\CustomModulesDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmSettings.Designer.cs">
-      <DependentUpon>frmSettings.cs</DependentUpon>
+    <Compile Include="Dialogs\CustomModulesDialog.Designer.cs">
+      <DependentUpon>CustomModulesDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\SettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SettingsDialog.Designer.cs">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileLogger.cs" />
+    <Compile Include="Log4NetLogger.cs" />
     <Compile Include="Menus\RibbonImageHelper.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="OutlookMajorVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <EmbeddedResource Include="AddressBook.resx">
+    <Compile Include="Robustness.cs" />
+    <Compile Include="Helpers\SearchHelper.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="WaitCursor.cs" />
+    <Compile Include="Dialogs\WithCustomModulesSelectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <EmbeddedResource Include="Dialogs\AddressBook.resx">
       <DependentUpon>AddressBook.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmArchive.resx">
-      <DependentUpon>frmArchive.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\AdvancedArchiveSettingsDialog.resx">
+      <DependentUpon>AdvancedArchiveSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmCustomModules.resx">
-      <DependentUpon>frmCustomModules.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\ConfirmRearchiveAlreadyArchivedEmails.resx">
+      <DependentUpon>ConfirmRearchiveAlreadyArchivedEmails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmSettings.resx">
-      <DependentUpon>frmSettings.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\ManualSyncContactForm.resx">
+      <DependentUpon>ManualSyncContactForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ShuttingDownDialog.resx">
+      <DependentUpon>ShuttingDownDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\EmailAccountArchiveSettingsControl.resx">
+      <DependentUpon>EmailAccountArchiveSettingsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ArchiveDialog.resx">
+      <DependentUpon>ArchiveDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\CustomModulesDialog.resx">
+      <DependentUpon>CustomModulesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SettingsDialog.resx">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\WithCustomModulesSelectorForm.resx">
+      <DependentUpon>WithCustomModulesSelectorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
+    <EmbeddedResource Include="Dialogs\ReconfigureOrDisableDialog.resx">
+      <DependentUpon>ReconfigureOrDisableDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="Locale\en_GB\LC_MESSAGES\SuiteCRMAddIn.mo">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Locale\fr_FR\LC_MESSAGES\SuiteCRMAddIn.mo">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Locale\fr_FR\LC_MESSAGES\SuiteCRMAddIn.po" />
+    <None Include="packages.config" />
+    <None Include="Properties\DataSources\SuiteCRMAddIn.BusinessLogic.CrmIdValidationPolicy+Policy.datasource" />
+    <None Include="Properties\DataSources\SuiteCRMAddIn.BusinessLogic.ErrorHandler+PopupWhen.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -275,21 +443,29 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\SuiteCRM.png" />
+    <None Include="Images\AddressBook.png" />
+    <None Include="Images\Archive.png" />
     <Content Include="Images\Cancel.png" />
     <Content Include="Images\Check.png" />
     <Content Include="Images\Contacts.jpg" />
+    <None Include="Images\manualSyncContact.png" />
     <Content Include="Images\Search_Button.png" />
+    <Content Include="Images\SendAndArchive.png" />
     <Content Include="Images\Settings.png" />
     <Content Include="Images\SuiteCRM.ico" />
-    <Content Include="Images\SuiteCRM.jpg" />
     <EmbeddedResource Include="Menus\MailRead2007.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SugarCRMClient\SuiteCRMClient.csproj">
+    <ProjectReference Include="..\SuiteCRMClient\SuiteCRMClient.csproj">
       <Project>{383e8ee7-604d-447d-a2c2-c50080d28f69}</Project>
       <Name>SuiteCRMClient</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -311,11 +487,118 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="Outlook" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Outlook" Language="cs" TemplatesPath="" DebugInfoExeName="#Software\Microsoft\Office\15.0\Outlook\InstallRoot\Path#outlook.exe" AddItemTemplatesGuid="{A58A78EB-1C92-4DDD-80CF-E8BD872ABFC4}" />
+        <ProjectProperties HostName="Outlook" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Outlook" Language="cs" TemplatesPath="" DebugInfoExeName="#Software\Microsoft\Office\16.0\Outlook\InstallRoot\Path#outlook.exe" AddItemTemplatesGuid="{A58A78EB-1C92-4DDD-80CF-E8BD872ABFC4}" />
         <Host Name="Outlook" GeneratedCodeNamespace="SuiteCRMAddIn" PublishedHash="69C324AB27932AA2FBF2B7EA72250886FF164DE6" IconIndex="0">
           <HostItem Name="ThisAddIn" Code="ThisAddIn.cs" CanonicalName="AddIn" PublishedHash="A529205D081E2A8B2635D5F687FF8BD7823A5692" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.13.0\build\net35\NUnit3TestAdapter.props'))" />
+    <Error Condition="!Exists('..\packages\TidyHtml5ManagedRepack.1.1.4\build\TidyHtml5ManagedRepack.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TidyHtml5ManagedRepack.1.1.4\build\TidyHtml5ManagedRepack.targets'))" />
+  </Target>
+  <UsingTask TaskName="BumpVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <ReleaseLevel ParameterType="System.String" Required="false" />
+      <TargetFileName ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+          /*
+           * Read the version from the assembly file, increment it as directed, 
+           * substitute it into the target file.
+           */
+          Console.WriteLine(String.Format("BumpVersion started: ReleaseLevel is '{0}'; Target is '{1}'", ReleaseLevel, TargetFileName));
+          String assemblyFileName = "Properties\\AssemblyInfo.cs";
+                    
+          string assemblyVersionDeclaration = new Regex("\\[assembly: AssemblyVersion\\(\"[0-9.]*\"\\)\\]")
+            .Match(File.ReadAllText(assemblyFileName)).ToString();
+
+          IEnumerator matches = new Regex("[0-9]+").Matches(assemblyVersionDeclaration).GetEnumerator();
+          List<int> elements = new List<int>();
+
+          while (matches.MoveNext())
+          {
+            elements.Add(int.Parse(matches.Current.ToString()));
+          }
+          
+          string oldVersion = String.Format("{0}\\.{1}\\.{2}\\.{3}", elements[0], elements[1], elements[2], elements[3]);
+            
+          Console.WriteLine(String.Format("\tOld version is {0}", oldVersion));
+
+          switch (ReleaseLevel)
+          {
+            case "MAJOR":
+              elements[0]++;
+              for (int i = 1; i < 4; i++) { elements[i] = 0; }
+              break;
+            case "MINOR":
+              elements[1]++;
+              for (int i = 2; i < 4; i++) { elements[i] = 0; }
+              break;
+            case "PATCH":
+              elements[2]++;
+              elements[3] = 0;
+              break;
+            default:
+              elements[3]++;
+              break;
+          }
+
+          string newVersion = String.Format("{0}.{1}.{2}.{3}", elements[0], elements[1], elements[2], elements[3]);
+
+          Console.WriteLine(String.Format("\tNew version is {0}", newVersion));
+          
+          File.WriteAllText(TargetFileName, 
+            Regex.Replace( File.ReadAllText(TargetFileName),
+              oldVersion,
+              newVersion));
+          ]]></Code>
+    </Task>
+  </UsingTask>
+  <PropertyGroup>
+    <DocDirectory>..\Documentation\</DocDirectory>
+    <Doxyfile>..\Doxyfile</Doxyfile>
+    <ReleaseLevel Condition=" '$(Configuration)' == 'Release' ">PATCH</ReleaseLevel>
+  </PropertyGroup>
+  <Target Name="Doxygen">
+    <MakeDir Directories="$(DocDirectory)" />
+    <Exec Command="doxygen.exe $(Doxyfile)" />
+  </Target>
+  <Target Name="DoxyClean">
+    <RemoveDir Directories="$(DocDirectory)\html" />
+    <RemoveDir Directories="$(DocDirectory)\latex" />
+    <Delete Files="$(DocDirectory)\*.tmp" />
+  </Target>
+  <Target Name="Bump">
+    <BumpVersion ReleaseLevel="$(ReleaseLevel)" TargetFileName="..\SuiteCrmClient\Properties\AssemblyInfo.cs" />
+    <BumpVersion ReleaseLevel="$(ReleaseLevel)" TargetFileName="..\SuiteCrmAddinWixSetup\Product.wxs" />
+    <BumpVersion ReleaseLevel="$(ReleaseLevel)" TargetFileName="..\Doxyfile" />
+    <BumpVersion ReleaseLevel="$(ReleaseLevel)" TargetFileName="..\README.md" />
+    <BumpVersion ReleaseLevel="$(ReleaseLevel)" TargetFileName="Properties\AssemblyInfo.cs" />
+  </Target>
+  <PropertyGroup>
+    <BuildDependsOn>  
+      Bump;
+      $(BuildDependsOn);  
+      Doxygen  
+    </BuildDependsOn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CleanDependsOn>  
+      $(CleanDependsOn);  
+      DoxyClean  
+    </CleanDependsOn>
+  </PropertyGroup>
+  <Import Project="..\packages\TidyHtml5ManagedRepack.1.1.4\build\TidyHtml5ManagedRepack.targets" Condition="Exists('..\packages\TidyHtml5ManagedRepack.1.1.4\build\TidyHtml5ManagedRepack.targets')" />
 </Project>

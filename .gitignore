@@ -41,3 +41,34 @@ Thumbs.db
 Desktop.ini
 # Disytel
 lang_cmp.php
+
+# Visual Studio
+packages/
+*.suo
+*.user
+.vs/
+obj
+bin
+
+
+Documentation/html/
+
+Documentation/latex/
+
+licencekey\.txt
+
+*.orig
+
+SuiteCRMAddIn/Documentation/html/
+
+SuiteCRMAddIn/Documentation/latex/
+
+*.pcapng
+
+*.xlsx
+
+*.psess
+
+*.vsp
+
+SuiteCRMAddIn/Images/*_old\.png
